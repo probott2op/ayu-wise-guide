@@ -2,41 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* AyuAahaar Design System - Sophisticated Ayurvedic Aesthetics
+All colors are HSL and follow traditional earth tones with modern elegance.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Natural Base Colors */
+    --background: 43 30% 97%;
+    --foreground: 30 8% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card Components */
+    --card: 45 35% 95%;
+    --card-foreground: 30 8% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popovers */
+    --popover: 45 35% 95%;
+    --popover-foreground: 30 8% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Vata (Deep Forest Green) */
+    --primary: 140 35% 25%;
+    --primary-foreground: 45 50% 95%;
+    --primary-glow: 140 45% 35%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Pitta (Warm Earth) */
+    --secondary: 25 45% 85%;
+    --secondary-foreground: 30 8% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Accent - Kapha (Golden Earth) */
+    --accent: 45 70% 80%;
+    --accent-foreground: 30 8% 15%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Muted Tones */
+    --muted: 35 25% 90%;
+    --muted-foreground: 30 8% 45%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Ayurvedic Dosha Colors */
+    --vata: 140 35% 25%;
+    --vata-light: 140 45% 85%;
+    --pitta: 15 85% 55%;
+    --pitta-light: 15 65% 85%;
+    --kapha: 45 70% 50%;
+    --kapha-light: 45 70% 85%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Therapeutic Colors */
+    --healing: 140 45% 35%;
+    --wisdom: 45 60% 60%;
+    --balance: 25 45% 65%;
 
-    --radius: 0.5rem;
+    /* Status Colors */
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 45 50% 95%;
+    --success: 140 45% 45%;
+    --warning: 45 85% 60%;
+
+    /* UI Elements */
+    --border: 35 25% 85%;
+    --input: 35 25% 88%;
+    --ring: 140 35% 25%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--vata)), hsl(var(--healing)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--kapha)), hsl(var(--wisdom)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--vata)) 0%, hsl(var(--healing)) 50%, hsl(var(--kapha)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 16px -4px hsl(var(--vata) / 0.1);
+    --shadow-medium: 0 8px 24px -8px hsl(var(--vata) / 0.15);
+    --shadow-strong: 0 16px 40px -12px hsl(var(--vata) / 0.25);
+    --shadow-glow: 0 0 32px hsl(var(--healing) / 0.3);
+
+    /* Spacing and Layout */
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
