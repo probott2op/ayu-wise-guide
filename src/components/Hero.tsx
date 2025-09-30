@@ -109,10 +109,11 @@ export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
             <Button 
               variant="outline" 
               size="lg"
+              onClick={() => window.location.href = '/login'}
               className="text-lg px-8 py-4 h-auto bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
             >
               <Leaf className="w-5 h-5 mr-2" />
-              Learn More
+              Login
             </Button>
           </div>
 
