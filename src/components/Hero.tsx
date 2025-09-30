@@ -5,11 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Heart, Brain, Zap, Leaf, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface HeroProps {
-  onGetStarted: () => void;
-}
+interface HeroProps {}
 
-export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
+export const Hero: React.FC<HeroProps> = () => {
   return (
     <div className="relative overflow-hidden bg-gradient-hero min-h-screen flex items-center">
       {/* Background Pattern */}
@@ -22,6 +20,19 @@ export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20">
         <div className="text-center space-y-8">
+          {/* Login Button at Top */}
+          <div className="flex justify-end mb-8">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => window.location.href = '/login'}
+              className="text-lg px-8 py-3 h-auto bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
+            >
+              <Leaf className="w-5 h-5 mr-2" />
+              Login
+            </Button>
+          </div>
+
           {/* Logo and Title */}
           <div className="space-y-4">
             <div className="flex justify-center">
@@ -95,27 +106,6 @@ export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
             </Card>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-            <Button 
-              onClick={onGetStarted}
-              size="lg" 
-              variant="ayurvedic"
-              className="text-lg px-8 py-4 h-auto shadow-glow hover:shadow-strong"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Start Your Ayurvedic Journey
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => window.location.href = '/login'}
-              className="text-lg px-8 py-4 h-auto bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              <Leaf className="w-5 h-5 mr-2" />
-              Login
-            </Button>
-          </div>
 
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 pt-12 text-primary-foreground/60">
