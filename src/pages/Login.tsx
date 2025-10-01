@@ -38,7 +38,7 @@ const Login = () => {
         title: "Practitioner Login Successful",
         description: "Redirecting to practitioner dashboard...",
       });
-      window.open('http://localhost:8082', '_self');
+      window.open('http://localhost:8082/practitioner-dashboard', '_self');
     }, 1000);
   };
 
