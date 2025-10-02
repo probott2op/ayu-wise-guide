@@ -23,17 +23,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showFoodTracker, setShowFoodTracker] = useState(false);
   
   // Check-in state
-  const [energyLevel, setEnergyLevel] = useState([5]);
-  const [digestionLevel, setDigestionLevel] = useState([5]);
-  const [sleepQuality, setSleepQuality] = useState([5]);
-  const [moodLevel, setMoodLevel] = useState([5]);
+  const [completedDailyFood, setCompletedDailyFood] = useState(false);
+  const [checkInNotes, setCheckInNotes] = useState("");
+  
+  // Food tracking state
+  const [loggedFoods, setLoggedFoods] = useState<any[]>([]);
+  const [todaysFoodLog, setTodaysFoodLog] = useState<any[]>([]);
   
   // Gamification data
   const [streak, setStreak] = useState(7);
   const [totalPoints, setTotalPoints] = useState(340);
   const [wellnessScore, setWellnessScore] = useState(78);
+  
+  // Mock check-in history
+  const [checkInHistory, setCheckInHistory] = useState([
+    { date: '2025-10-01', completed: true, foodCompleted: true, points: 20 },
+    { date: '2025-09-30', completed: true, foodCompleted: true, points: 20 },
+    { date: '2025-09-29', completed: true, foodCompleted: false, points: 10 },
+    { date: '2025-09-28', completed: true, foodCompleted: true, points: 20 },
+    { date: '2025-09-27', completed: true, foodCompleted: true, points: 20 },
+    { date: '2025-09-26', completed: true, foodCompleted: true, points: 20 },
+    { date: '2025-09-25', completed: true, foodCompleted: true, points: 20 },
+  ]);
   
   const badges = [
     { name: "7-Day Streak", icon: "🔥", earned: true },
@@ -514,18 +528,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   };
 
   const handleCheckInSubmit = () => {
-    const avgScore = (energyLevel[0] + digestionLevel[0] + sleepQuality[0] + moodLevel[0]) / 4;
-    const pointsEarned = Math.round(avgScore * 2);
+    const pointsEarned = completedDailyFood ? 20 : 10;
     
     setStreak(prev => prev + 1);
     setTotalPoints(prev => prev + pointsEarned);
-    setWellnessScore(Math.round(avgScore * 10));
+    setCheckInHistory(prev => [
+      { 
+        date: new Date().toISOString().split('T')[0], 
+        completed: true, 
+        foodCompleted: completedDailyFood, 
+        points: pointsEarned 
+      },
+      ...prev
+    ]);
     setShowCheckIn(false);
+    setCompletedDailyFood(false);
+    setCheckInNotes("");
     
     toast({
       title: "Check-in Complete! 🎉",
       description: `You earned ${pointsEarned} points! Current streak: ${streak + 1} days`,
     });
+  };
+
+  const handleAddFoodLog = (food: any) => {
+    setTodaysFoodLog(prev => [...prev, { ...food, loggedAt: new Date().toISOString() }]);
+    setLoggedFoods(prev => [...prev, { ...food, loggedAt: new Date().toISOString() }]);
+    toast({
+      title: "Food Logged!",
+      description: `${food.name} added to your food log`,
+    });
+  };
+
+  const getTodaysCalories = () => {
+    return todaysFoodLog.reduce((acc, food) => acc + food.nutrients.calories, 0);
   };
 
   const recommendations = [
@@ -767,15 +803,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             </div>
 
             {/* Main Tracker Cards */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <Card className="p-6">
                 <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  Wellness Tracking
+                  <Apple className="w-5 h-5 text-primary" />
+                  Track Progress
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Track your daily symptoms, energy levels, and how well you're following your personalized recommendations.
+                  Log your daily food intake and track what you're eating throughout the day.
                 </p>
+                <div className="mb-3 p-3 bg-gradient-subtle rounded-md">
+                  <p className="text-sm font-medium text-foreground">Today's Calories</p>
+                  <p className="text-2xl font-bold text-primary">{getTodaysCalories()}</p>
+                </div>
+                <Button 
+                  variant="ayurvedic" 
+                  className="w-full gap-2"
+                  onClick={() => setShowFoodTracker(true)}
+                >
+                  <Apple className="w-4 h-4" />
+                  Log Food
+                </Button>
+              </Card>
+
+              <Card className="p-6">
+                <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-healing" />
+                  Daily Check-in
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Complete your daily check-in and mark if you followed your meal plan.
+                </p>
+                <div className="mb-3 p-3 bg-gradient-subtle rounded-md">
+                  <p className="text-sm font-medium text-foreground">Last Check-in</p>
+                  <p className="text-sm text-muted-foreground">{checkInHistory[0]?.date || 'No check-ins yet'}</p>
+                </div>
                 <Button 
                   variant="ayurvedic" 
                   className="w-full gap-2"
@@ -788,12 +850,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               
               <Card className="p-6">
                 <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-healing" />
-                  Progress Insights
+                  <TrendingUp className="w-5 h-5 text-accent" />
+                  View Analytics
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  View your wellness journey over time and see how your dosha balance changes with your lifestyle adjustments.
+                  View your wellness journey history and check-in analytics over time.
                 </p>
+                <div className="mb-3 p-3 bg-gradient-subtle rounded-md">
+                  <p className="text-sm font-medium text-foreground">Completion Rate</p>
+                  <p className="text-2xl font-bold text-accent">
+                    {Math.round((checkInHistory.filter(c => c.foodCompleted).length / checkInHistory.length) * 100)}%
+                  </p>
+                </div>
                 <Button 
                   variant="outline" 
                   className="w-full gap-2"
@@ -838,80 +906,154 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-primary" />
-              Daily Wellness Check-in
+              <Calendar className="w-6 h-6 text-primary" />
+              Daily Check-in
             </DialogTitle>
             <DialogDescription>
-              Rate how you're feeling today (1-10 scale)
+              Mark your daily progress and food completion
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-foreground">Energy Level</label>
-                <Badge variant="outline">{energyLevel[0]}/10</Badge>
+            <Card className="p-4 bg-gradient-subtle">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Apple className="w-8 h-8 text-primary" />
+                  <div>
+                    <p className="font-semibold text-foreground">Did you complete your daily food plan?</p>
+                    <p className="text-xs text-muted-foreground">Following your meal plan consistently helps achieve better results</p>
+                  </div>
+                </div>
+                <Button
+                  variant={completedDailyFood ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCompletedDailyFood(!completedDailyFood)}
+                >
+                  {completedDailyFood ? "✓ Yes" : "No"}
+                </Button>
               </div>
-              <Slider
-                value={energyLevel}
-                onValueChange={setEnergyLevel}
-                max={10}
-                min={1}
-                step={1}
-                className="w-full"
+            </Card>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Notes (Optional)</label>
+              <textarea
+                className="w-full min-h-[100px] p-3 rounded-md border bg-background text-foreground"
+                placeholder="How are you feeling today? Any challenges or wins?"
+                value={checkInNotes}
+                onChange={(e) => setCheckInNotes(e.target.value)}
               />
             </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-foreground">Digestion Quality</label>
-                <Badge variant="outline">{digestionLevel[0]}/10</Badge>
+            <Card className="p-4 bg-primary/5 border-primary">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Points to earn: {completedDailyFood ? "20 points" : "10 points"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Complete your food plan for bonus points!
+                  </p>
+                </div>
               </div>
-              <Slider
-                value={digestionLevel}
-                onValueChange={setDigestionLevel}
-                max={10}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-foreground">Sleep Quality</label>
-                <Badge variant="outline">{sleepQuality[0]}/10</Badge>
-              </div>
-              <Slider
-                value={sleepQuality}
-                onValueChange={setSleepQuality}
-                max={10}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-foreground">Mood & Mental Clarity</label>
-                <Badge variant="outline">{moodLevel[0]}/10</Badge>
-              </div>
-              <Slider
-                value={moodLevel}
-                onValueChange={setMoodLevel}
-                max={10}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-            </div>
+            </Card>
           </div>
 
           <Button onClick={handleCheckInSubmit} className="w-full gap-2">
             <Star className="w-4 h-4" />
             Complete Check-in
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Food Tracker Dialog */}
+      <Dialog open={showFoodTracker} onOpenChange={setShowFoodTracker}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Apple className="w-6 h-6 text-primary" />
+              Track Your Food
+            </DialogTitle>
+            <DialogDescription>
+              Log what you've eaten today • Choose from your meal plan or search 8000+ recipes
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Card className="p-4 bg-gradient-primary border-primary">
+              <h3 className="font-semibold text-primary-foreground mb-2">Today's Food Log</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary-foreground">{getTodaysCalories()}</p>
+                  <p className="text-xs text-primary-foreground/80">Calories</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary-foreground">{todaysFoodLog.length}</p>
+                  <p className="text-xs text-primary-foreground/80">Items Logged</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary-foreground">{Math.round((getTodaysCalories() / 2000) * 100)}%</p>
+                  <p className="text-xs text-primary-foreground/80">Daily Goal</p>
+                </div>
+              </div>
+            </Card>
+
+            {todaysFoodLog.length > 0 && (
+              <Card className="p-4 bg-gradient-subtle">
+                <h4 className="font-medium text-foreground mb-3">Logged Today</h4>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {todaysFoodLog.map((food, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-background rounded">
+                      <div className="flex items-center gap-2">
+                        <Apple className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">{food.name}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">{food.nutrients.calories} cal</Badge>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <div>
+              <h3 className="font-semibold text-foreground mb-3">Your Meal Plan - Click to Log</h3>
+              <div className="space-y-3">
+                {['Breakfast', 'Mid-morning Snack', 'Lunch', 'Evening Snack', 'Dinner', 'Bedtime'].map((mealType) => {
+                  const mealItems = foodItems.filter(f => f.meal === mealType);
+                  if (mealItems.length === 0) return null;
+                  
+                  return (
+                    <div key={mealType}>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">{mealType}</h4>
+                      <div className="grid gap-2">
+                        {mealItems.map((food) => (
+                          <Card 
+                            key={food.id} 
+                            className="p-3 hover:shadow-medium transition-all cursor-pointer hover:border-primary"
+                            onClick={() => handleAddFoodLog(food)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Apple className="w-4 h-4 text-primary" />
+                                <div>
+                                  <p className="font-medium text-sm text-foreground">{food.name}</p>
+                                  <p className="text-xs text-muted-foreground">{food.portion}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">{food.nutrients.calories} cal</Badge>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0">+</Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -924,125 +1066,103 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               Your Wellness Analytics
             </DialogTitle>
             <DialogDescription>
-              Track your progress and improvements over time
+              View your check-in history and food completion analytics
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Progress Overview */}
+            {/* Overall Stats */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="p-4 bg-gradient-primary">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-primary-foreground">{checkInHistory.length}</p>
+                  <p className="text-sm text-primary-foreground/80">Total Check-ins</p>
+                </div>
+              </Card>
+              <Card className="p-4 bg-gradient-to-br from-healing/20 to-transparent">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-foreground">
+                    {checkInHistory.filter(c => c.foodCompleted).length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Days Food Completed</p>
+                </div>
+              </Card>
+              <Card className="p-4 bg-gradient-to-br from-accent/20 to-transparent">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-foreground">
+                    {Math.round((checkInHistory.filter(c => c.foodCompleted).length / checkInHistory.length) * 100)}%
+                  </p>
+                  <p className="text-sm text-muted-foreground">Completion Rate</p>
+                </div>
+              </Card>
+            </div>
+
+            {/* Check-in History */}
             <Card className="p-5 bg-gradient-subtle">
-              <h3 className="font-semibold mb-4 text-foreground">Overall Progress</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Wellness Score</span>
-                    <span className="text-sm font-semibold text-foreground">{wellnessScore}%</span>
-                  </div>
-                  <Progress value={wellnessScore} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Diet Compliance</span>
-                    <span className="text-sm font-semibold text-foreground">85%</span>
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Exercise Consistency</span>
-                    <span className="text-sm font-semibold text-foreground">72%</span>
-                  </div>
-                  <Progress value={72} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Meditation Practice</span>
-                    <span className="text-sm font-semibold text-foreground">60%</span>
-                  </div>
-                  <Progress value={60} className="h-2" />
-                </div>
+              <h3 className="font-semibold mb-4 text-foreground">Check-in History</h3>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {checkInHistory.map((entry, idx) => (
+                  <Card key={idx} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center",
+                          entry.foodCompleted ? "bg-healing/20" : "bg-muted"
+                        )}>
+                          {entry.foodCompleted ? (
+                            <Star className="w-5 h-5 text-healing" />
+                          ) : (
+                            <Calendar className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {entry.foodCompleted ? "✓ Food plan completed" : "Partial completion"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={entry.foodCompleted ? "default" : "secondary"}>
+                          +{entry.points} pts
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </Card>
 
-            {/* Dosha Balance Trends */}
+            {/* Weekly Insights */}
             <Card className="p-5 bg-gradient-subtle">
-              <h3 className="font-semibold mb-4 text-foreground">Dosha Balance Trends</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Leaf className="w-4 h-4 text-vata" />
-                      Vata
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">35%</span>
-                      <Badge variant="outline" className="text-xs border-vata text-vata">↓ 5%</Badge>
-                    </div>
-                  </div>
-                  <Progress value={35} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-pitta" />
-                      Pitta
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">45%</span>
-                      <Badge variant="outline" className="text-xs border-pitta text-pitta">↓ 8%</Badge>
-                    </div>
-                  </div>
-                  <Progress value={45} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Apple className="w-4 h-4 text-kapha" />
-                      Kapha
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">20%</span>
-                      <Badge variant="outline" className="text-xs border-kapha text-kapha">↑ 3%</Badge>
-                    </div>
-                  </div>
-                  <Progress value={20} className="h-2" />
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mt-4 italic">
-                * Positive changes! Your Pitta levels are decreasing, indicating better balance.
-              </p>
-            </Card>
-
-            {/* Weekly Summary */}
-            <Card className="p-5 bg-gradient-subtle">
-              <h3 className="font-semibold mb-4 text-foreground">This Week's Summary</h3>
+              <h3 className="font-semibold mb-4 text-foreground">This Week's Insights</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Avg. Energy</span>
-                    <span className="text-sm font-semibold text-foreground">7.5/10</span>
+                    <span className="text-sm text-muted-foreground">Check-ins Completed</span>
+                    <span className="text-sm font-semibold text-foreground">7/7 days</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Avg. Digestion</span>
-                    <span className="text-sm font-semibold text-foreground">8.2/10</span>
+                    <span className="text-sm text-muted-foreground">Food Plan Followed</span>
+                    <span className="text-sm font-semibold text-foreground">6/7 days</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Avg. Sleep</span>
-                    <span className="text-sm font-semibold text-foreground">7.8/10</span>
+                    <span className="text-sm text-muted-foreground">Avg. Daily Calories</span>
+                    <span className="text-sm font-semibold text-foreground">1950 cal</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Avg. Mood</span>
-                    <span className="text-sm font-semibold text-foreground">8.0/10</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Check-ins</span>
-                    <span className="text-sm font-semibold text-foreground">7/7 days</span>
+                    <span className="text-sm text-muted-foreground">Current Streak</span>
+                    <span className="text-sm font-semibold text-foreground">{streak} days</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Points Earned</span>
-                    <span className="text-sm font-semibold text-foreground">105 pts</span>
+                    <span className="text-sm font-semibold text-foreground">130 pts</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Wellness Score</span>
+                    <span className="text-sm font-semibold text-foreground">{wellnessScore}%</span>
                   </div>
                 </div>
               </div>
